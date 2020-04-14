@@ -139,4 +139,3 @@ light_led:
         ldr r1, =0xa0   /*一亮一灭 */
         str r1, [r0]
         mov pc, lr
-/*github is fun*/
