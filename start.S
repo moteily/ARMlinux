@@ -44,6 +44,7 @@ reset:
         bl disable_interrupt   /*关闭外部中断，mask寄存器配置全1 */
         bl disable_mmu  /*关闭mmu和cache 1.cp15协处理器使i d cache失效 2. */
         bl clock_init   /*初始化时钟 */
+        bl mem_init     /*内存初始化 */
         bl light_led   /*不要忘记外设及地址初始化,否则外设无法使用（6410） */
 
 set_svc:
@@ -90,7 +91,7 @@ disable_mmu:  /*关闭mmu和cache 1.cp15协处理器使i d cache失效 2.关闭m
 #define ARM_RATIO    0  /*ARMCLK = DOUTAPLL / (ARM_RATIO + 1)  	= 532/(0+1) = 532  MHz */ 
 #define MPLL_RATIO   0  /* DOUTMPLL = MOUTMPLL / (MPLL_RATIO + 1)   = 532/(0+1) = 532  MHz*/ 
 #define HCLKX2_RATIO 1  /*HCLKX2 = HCLKX2IN / (HCLKX2_RATIO + 1) = 532/(1+1) = 266  MHz */
-#define HCLK_RATIO   1  /*HCLK 	= HCLKX2   / (HCLK_RATIO + 1)   = 266/(1+1) = 133  MHz */						// 
+#define HCLK_RATIO   1  /*HCLK 	= HCLKX2   / (HCLK_RATIO + 1)   = 266/(1+1) = 133  MHz */ 
 #define PCLK_RATIO   3  /*PCLK   = HCLKX2   / (PCLK_RATIO + 1)   = 266/(3+1) = 66.5 MHz */
 #define APLL_CON_VAL  ((1<<31) | (266 << 16) | (3 << 8) | (1 << 0))
 #define MPLL_CON_VAL  ((1<<31) | (266 << 16) | (3 << 8) | (1 << 0)) /*MPLL APLL都设置为533MHz */
