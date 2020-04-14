@@ -1,6 +1,11 @@
 .text
 .global mem_init
 mem_init:
+   /*设置data pin 16 */
+    ldr r0, =0x7e00f120
+    mov r1, #0x0
+    str r1, [r0]
+    /*DRAM控制器初始化顺序 */
     ldr r0, =0x7e001004
     mov r1, #0x4
     str r1, [r0]
@@ -78,6 +83,59 @@ mem_init:
     ldr r0, =0x7e001048
     ldr r1, =((120/(1000000000/133000000)+1))
     str r1, [r0]
+
+    ldr r0, =0x7e00100c
+    ldr r1, =0x00010012
+    str r1, [r0]
+
+    ldr r0, =0x7e00104c
+    ldr r1, =0x0b45
+    str r1, [r0]
+
+    ldr r0, =0x7e001200
+    ldr r1, =0x150f8
+    str r1, [r0]
+
+    /*DDR 初始化顺序 */
+    //nop
+    ldr r0, =0x7e001008
+    ldr r1, =0xc0000
+    str r1, [r0]
+    //pre charge all
+    ldr r0, =0x7e001008
+    ldr r1, =0x0
+    str r1, [r0]
+    //auto refresh
+    ldr r0, =0x7e001008
+    ldr r1, =0x40000   //or 4?
+    str r1, [r0]
+    //auto refresh
+    ldr r0, =0x7e001008
+    ldr r1, =0x40000
+    str r1, [r0]
+    //mrs
+    ldr r0, =0x7e001008
+    ldr r1, =0xa0000
+    str r1, [r0] 
+    //mrs
+    ldr r0, =0x7e001008
+    ldr r1, =0x80032
+    str r1, [r0]
+    //使dram控制器进入准备状态
+    ldr r0, =0x7e001004
+    mov r1, #0x0
+    str r1, [r0]
+    //检查是否进入准备状态
+check_ready:
+    ldr r0, =0x7e001000
+    ldr r1, [r0]
+    mov r2, #0x3
+    and r1, r1, r2
+    cmp r1, #0x1
+    bne check_ready 
+
+    mov pc, lr
+    
 
 
 
