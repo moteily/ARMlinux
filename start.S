@@ -9,6 +9,7 @@ _start:
         ldr pc, _not_used
         ldr pc, _irq
         ldr pc, _fiq
+
 /*  ldr pc, _reset*/       
 /* ldr pc, _undifined_instruction 等价于
 ldr pc, =undifined_instruction 伪指令，
@@ -45,7 +46,12 @@ reset:
         bl disable_mmu  /*关闭mmu和cache 1.cp15协处理器使i d cache失效 2. */
         bl clock_init   /*初始化时钟 */
         bl mem_init     /*内存初始化 */
-        bl light_led   /*不要忘记外设及地址初始化,否则外设无法使用（6410） */
+        bl copy_to_ram /*将steppingstone的代码考到内存起点  */
+        bl init_stack  /*初始化堆栈 */
+        bl clean_bss   /*bss段初始化 */
+        ldr pc, =gboot_main /*跳转到内存执行c语言程序 */
+        @ bl light_led   /*不要忘记外设及地址初始化,否则外设无法使用（6410） */
+       
 
 set_svc:
         mrs r0, cpsr
@@ -131,6 +137,7 @@ clock_init:
 
 #define GPKCON 0x7f008800       /*GPK控制寄存器0 */
 #define GPKDAT 0x7f008808       /*GPK数据寄存器 */
+.global light_led
 light_led:
         ldr r0, =GPKCON
         ldr r1, =0x11110000     /*GPK4-7设置为output */
@@ -140,3 +147,31 @@ light_led:
         ldr r1, =0xa0   /*一亮一灭 */
         str r1, [r0]
         mov pc, lr
+/*复制4k sram 到内存 */
+copy_to_ram:
+        ldr r0, =0x0c000000  //起点(垫脚石)
+        ldr r1, =0x50008000  //终点（内存）
+        add r3, r0, #4*1024  //复制4k空间的代码,因为6410的垫脚石是4k
+copy_loop:
+        ldr r2, [r0], #4
+        str r2, [r1], #4
+        cmp r0, r3
+        bne copy_loop
+        mov pc, lr
+/*在内存初始化64mb的堆栈，由于是满减栈，因此从内存起始地址向上取64M作为栈底指针sp的位置，即54000000 */
+init_stack: 
+        ldr sp,=0x54000000
+        mov pc ,lr 
+
+clean_bss:
+        ldr r0, =bss_start
+        ldr r1, =bss_end
+        cmp r0, r1
+        moveq pc, lr   // bss为空 直接返回，否则执行下面的clean_loop清除bss
+clean_loop:
+        mov r2,#0
+        str r2, [r0], #4
+        cmp r0,r1
+        bne clean_loop
+        mov pc, lr
+

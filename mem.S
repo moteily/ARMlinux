@@ -135,12 +135,3 @@ check_ready:
     bne check_ready 
 
     mov pc, lr
-    
-
-
-
-
-
-
-
-
