@@ -26,5 +26,5 @@ int gboot_main()
     //*(GPKCON) = 0x11110000;
     //*(GPKDAT) = 0xa0;
     //light_led();  //C调用汇编，light_led 要声明为.global
-    return 0;
+    return 0; 
 }
